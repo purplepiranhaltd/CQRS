@@ -3,8 +3,7 @@ using Microsoft.Extensions.Logging;
 using PurplePiranha.Cqrs.Core.Commands;
 using PurplePiranha.Cqrs.Validation.Validators;
 using PurplePiranha.FluentResults.Results;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
+using PurplePiranha.Cqrs.Core.Reflection;
 using ValidationFailure = PurplePiranha.Cqrs.Validation.Failures.ValidationFailure;
 
 namespace PurplePiranha.Cqrs.Validation.Commands;
@@ -15,21 +14,6 @@ public class ValidatingCommandExecutor : ICommandExecutor
     private readonly IValidatorExecutor _validatorExecutor;
     private readonly ILogger<ValidatingCommandExecutor> _logger;
 
-#nullable disable
-    private static readonly MethodInfo PerformExecutionTAsyncMethod =
-        typeof(ValidatingCommandExecutor)
-            .GetMethod(
-                nameof(PerformExecutionTAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-
-    private static readonly MethodInfo PerformValidatationAsyncMethod =
-        typeof(ValidatingCommandExecutor)
-            .GetMethod(
-                nameof(PerformValidatationAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-#nullable enable
 
     public ValidatingCommandExecutor(
         ICommandExecutor commandExecutor,
@@ -59,52 +43,16 @@ public class ValidatingCommandExecutor : ICommandExecutor
         var commandType = command.GetType();
         var resultType = typeof(TResult);
 
-        try
-        {
-            var method = PerformExecutionTAsyncMethod.MakeGenericMethod(commandType, resultType);
-
-#nullable disable
-            return await (Task<Result<TResult>>)method.Invoke(this, new object[] { command, cancellationToken });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
+                typeof(ValidatingCommandExecutor), this, nameof(PerformExecutionTAsync), new[] { commandType, resultType }, command, cancellationToken);
     }
 
     private async Task<ValidationResult> CallPerformValidatationAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : notnull
     {
         var queryType = command.GetType();
 
-        try
-        {
-            var method = PerformValidatationAsyncMethod.MakeGenericMethod(queryType);
-
-#nullable disable
-            return await (Task<ValidationResult>)method.Invoke(this, new object[] { command, cancellationToken });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<ValidationResult>(
+                typeof(ValidatingCommandExecutor), this, nameof(PerformValidatationAsync), new[] { queryType }, command, cancellationToken);
     }
 
     private async Task<Result<TResult>> PerformExecutionTAsync<TCommand, TResult>(TCommand query, CancellationToken cancellationToken = default) where TCommand : ICommand<TResult>

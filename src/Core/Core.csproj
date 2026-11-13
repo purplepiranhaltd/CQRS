@@ -19,6 +19,12 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="PurplePiranha.Cqrs.Validation" />
+		<InternalsVisibleTo Include="PurplePiranha.Cqrs.Permissions" />
+		<InternalsVisibleTo Include="PurplePiranha.Cqrs.Core.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="11.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />

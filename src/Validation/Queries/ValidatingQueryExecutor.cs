@@ -3,8 +3,7 @@ using Microsoft.Extensions.Logging;
 using PurplePiranha.Cqrs.Core.Queries;
 using PurplePiranha.Cqrs.Validation.Validators;
 using PurplePiranha.FluentResults.Results;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
+using PurplePiranha.Cqrs.Core.Reflection;
 using ValidationFailure = PurplePiranha.Cqrs.Validation.Failures.ValidationFailure;
 
 namespace PurplePiranha.Cqrs.Validation.Queries;
@@ -16,21 +15,6 @@ public class ValidatingQueryExecutor : IQueryExecutor
     private readonly IValidatorExecutor _validatorExecutor;
     private readonly ILogger<ValidatingQueryExecutor> _logger;
 
-#nullable disable
-    private static readonly MethodInfo PerformExecutionAsyncMethod =
-        typeof(ValidatingQueryExecutor)
-            .GetMethod(
-                nameof(PerformExecutionAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-
-    private static readonly MethodInfo PerformValidatationAsyncMethod =
-        typeof(ValidatingQueryExecutor)
-            .GetMethod(
-                nameof(PerformValidatationAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-#nullable enable
 
     public ValidatingQueryExecutor(
         IQueryExecutor queryExecutor,
@@ -53,26 +37,8 @@ public class ValidatingQueryExecutor : IQueryExecutor
         var queryType = query.GetType();
         var resultType = typeof(TResult);
 
-        try
-        {
-            var method = PerformExecutionAsyncMethod.MakeGenericMethod(queryType, resultType);
-
-#nullable disable
-            return await (Task<Result<TResult>>)method.Invoke(this, new object[] { query });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
+                typeof(ValidatingQueryExecutor), this, nameof(PerformExecutionAsync), new[] { queryType, resultType }, query);
     }
 
     
@@ -81,26 +47,8 @@ public class ValidatingQueryExecutor : IQueryExecutor
     {
         var queryType = query.GetType();
 
-        try
-        {
-            var method = PerformValidatationAsyncMethod.MakeGenericMethod(queryType);
-
-#nullable disable
-            return await (Task<ValidationResult>)method.Invoke(this, new object[] { query });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<ValidationResult>(
+                typeof(ValidatingQueryExecutor), this, nameof(PerformValidatationAsync), new[] { queryType }, query);
     }
 
     private async Task<Result<TResult>> PerformExecutionAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>

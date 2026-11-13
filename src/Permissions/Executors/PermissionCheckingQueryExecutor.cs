@@ -3,8 +3,7 @@ using PurplePiranha.Cqrs.Permissions.Abstractions;
 using PurplePiranha.Cqrs.Permissions.Decorators;
 using PurplePiranha.Cqrs.Permissions.Factories;
 using PurplePiranha.FluentResults.Results;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
+using PurplePiranha.Cqrs.Core.Reflection;
 
 namespace PurplePiranha.Cqrs.Permissions.Executors;
 
@@ -41,51 +40,16 @@ public class PermissionCheckingQueryExecutor : IQueryExecutor
         var queryType = query.GetType();
         var resultType = typeof(TResult);
 
-        try
-        {
-            var method = PerformExecutionAsyncMethod.MakeGenericMethod(queryType, resultType);
-
-#nullable disable
-            return await (Task<Result<TResult>>)method.Invoke(this, new object[] { query });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
+                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformExecutionAsync), new[] { queryType, resultType }, query);
     }
 
     private async Task<bool> CallPerformPermissionCheckingAsync<TQuery>(TQuery query) where TQuery : notnull
     {
         var queryType = query.GetType();
 
-        try
-        {
-            var method = PerformPermissionCheckingAsyncMethod.MakeGenericMethod(queryType);
-
-#nullable disable
-            return await (Task<bool>)method.Invoke(this, new object[] { query });
-#nullable enable
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<bool>(
+                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformPermissionCheckingAsync), new[] { queryType }, query);
     }
 
     private async Task<Result<TResult>> PerformExecutionAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
@@ -107,21 +71,4 @@ public class PermissionCheckingQueryExecutor : IQueryExecutor
     }
     #endregion
 
-    #region MethodInfo
-#nullable disable
-    private static readonly MethodInfo PerformExecutionAsyncMethod =
-        typeof(PermissionCheckingQueryExecutor)
-            .GetMethod(
-                nameof(PerformExecutionAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-
-    private static readonly MethodInfo PerformPermissionCheckingAsyncMethod =
-        typeof(PermissionCheckingQueryExecutor)
-            .GetMethod(
-                nameof(PerformPermissionCheckingAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-#nullable enable
-    #endregion
 }

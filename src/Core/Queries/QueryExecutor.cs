@@ -2,8 +2,7 @@
 using PurplePiranha.Cqrs.Core.Commands;
 using PurplePiranha.Cqrs.Core.Failures;
 using PurplePiranha.FluentResults.Results;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
+using PurplePiranha.Cqrs.Core.Reflection;
 using System.Threading.Tasks;
 
 namespace PurplePiranha.Cqrs.Core.Queries;
@@ -17,14 +16,6 @@ public class QueryExecutor : IQueryExecutor
     private readonly IQueryHandlerFactory _queryHandlerFactory;
     private readonly ILogger<QueryExecutor> _logger;
 
-#nullable disable
-    private static MethodInfo ExecuteQueryAsyncMethod => 
-        typeof(QueryExecutor)
-            .GetMethod(
-                nameof(ExecuteQueryAsync), 
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-#nullable enable
 
     public QueryExecutor(IQueryHandlerFactory queryHandlerFactory, ILogger<QueryExecutor> logger)
     {
@@ -39,26 +30,8 @@ public class QueryExecutor : IQueryExecutor
         var queryType = query.GetType();
         var resultType = typeof(TResult);
 
-        try
-        {
-            var method = ExecuteQueryAsyncMethod.MakeGenericMethod(queryType, resultType);
-
-#nullable disable
-            return await (Task<Result<TResult>>)method.Invoke(this, new object[] { query });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
+                typeof(QueryExecutor), this, nameof(ExecuteQueryAsync), new[] { queryType, resultType }, query);
     }
 
     protected virtual async Task<Result<TResult>> ExecuteQueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>

@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using PurplePiranha.Cqrs.Core.Failures;
 using PurplePiranha.FluentResults.Results;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
+using PurplePiranha.Cqrs.Core.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,14 +16,6 @@ public class CommandExecutor : ICommandExecutor
     private readonly ICommandHandlerFactory _commandHandlerFactory;
     private readonly ILogger<CommandExecutor> _logger;
 
-#nullable disable
-    private static MethodInfo ExecuteCommandAsyncMethod =>
-        typeof(CommandExecutor)
-            .GetMethod(
-                nameof(ExecuteCommandAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-#nullable enable
 
     public CommandExecutor(ICommandHandlerFactory commandHandlerFactory, ILogger<CommandExecutor> logger)
     {
@@ -69,26 +60,8 @@ public class CommandExecutor : ICommandExecutor
         var commandType = command.GetType();
         var resultType = typeof(TResult);
 
-        try
-        {
-            var method = ExecuteCommandAsyncMethod.MakeGenericMethod(commandType, resultType);
-
-#nullable disable
-            return await (Task<Result<TResult>>)method.Invoke(this, new object[] { command, cancellationToken });
-#nullable enable
-
-        }
-        catch (TargetInvocationException ex)
-        {
-            if (ex.InnerException is null)
-                throw;
-
-            var info = ExceptionDispatchInfo.Capture(ex.InnerException);
-            info.Throw();
-
-            // compiler requires assignment - an exception is always thrown so we can never get here
-            return default;
-        }
+        return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
+                typeof(CommandExecutor), this, nameof(ExecuteCommandAsync), new[] { commandType, resultType }, command, cancellationToken);
     }
 
     /// <summary>
