@@ -54,7 +54,7 @@ public class QueryExecutorWithPermissionsUnitTests
     [Test]
     public async Task QueryExecutorWithPermissions_ThrowsIfValidatorDoesNotExist()
     {
-        Assert.ThrowsAsync<PermissionCheckerNotImplementedException>(async () =>
+        await Assert.ThrowsAsync<PermissionCheckerNotImplementedException>(async () =>
         {
             await _queryExecutor.ExecuteAsync(new TestPermissionCheckingQueryWithoutPermissionChecker(1));
         });

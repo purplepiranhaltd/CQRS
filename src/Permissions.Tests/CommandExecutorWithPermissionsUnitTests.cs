@@ -81,7 +81,7 @@ public class CommandExecutorWithPermissionsUnitTests
     [Test]
     public async Task CommandExecutorWithPermissions_ThrowsIfPermissionCheckerDoesNotExist()
     {
-        Assert.ThrowsAsync<PermissionCheckerNotImplementedException>(async () =>
+        await Assert.ThrowsAsync<PermissionCheckerNotImplementedException>(async () =>
         {
             await _commandExecutor.ExecuteAsync(new TestPermissionCheckingCommandWithoutPermissionChecker(1));
         });

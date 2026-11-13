@@ -54,7 +54,7 @@ public class QueryExecutorWithValidationUnitTests
     [Test]
     public async Task QueryExecutor_ThrowsIfValidatorDoesNotExist()
     {
-        Assert.ThrowsAsync<ValidatorNotImplementedException>(async () =>
+        await Assert.ThrowsAsync<ValidatorNotImplementedException>(async () =>
         {
             await _queryExecutor.ExecuteAsync(new TestValidatingQueryWithoutValidationHandler(1));
         });

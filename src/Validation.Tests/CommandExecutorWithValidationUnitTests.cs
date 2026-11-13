@@ -53,7 +53,7 @@ public class CommandExecutorWithValidationUnitTests
     [Test]
     public async Task CommandExecutor_ThrowsIfValidatorDoesNotExist()
     {
-        Assert.ThrowsAsync<ValidatorNotImplementedException>(async () =>
+        await Assert.ThrowsAsync<ValidatorNotImplementedException>(async () =>
         {
             await _commandExecutor.ExecuteAsync(new TestValidatingCommandWithoutValidationHandler(1));
         });
