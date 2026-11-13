@@ -45,6 +45,11 @@ public class PermissionBuilder :
         {
             var condition = await rule.condition;
 
+            // Negate the individual condition (not the running total)
+            // so that chained And/Or rules combine correctly.
+            if (rule.negate)
+                condition = !condition;
+
             switch (rule.mode)
             {
                 case PermissionBuilderMode.And:
@@ -54,9 +59,6 @@ public class PermissionBuilder :
                     matchesRule = matchesRule || condition;
                     break;
             }
-
-            if (rule.negate)
-                matchesRule = !matchesRule;
         }
 
         if (matchesRule)

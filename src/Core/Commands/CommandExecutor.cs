@@ -49,7 +49,7 @@ public class CommandExecutor : ICommandExecutor
         }
         catch (CommandHandlerNotImplementedException e)
         {
-            return await Task.FromResult(Result.FailureResult(new CommandHandlerNotImplementedFailure(nameof(TCommand))));
+            return await Task.FromResult(Result.FailureResult(new CommandHandlerNotImplementedFailure(typeof(TCommand).Name)));
         }
     }
 
@@ -107,7 +107,7 @@ public class CommandExecutor : ICommandExecutor
         }
         catch (CommandHandlerNotImplementedException e)
         {
-            return await Task.FromResult(Result.FailureResult<TResult>(new CommandHandlerNotImplementedFailure(nameof(TCommand))));
+            return await Task.FromResult(Result.FailureResult<TResult>(new CommandHandlerNotImplementedFailure(typeof(TCommand).Name)));
         }
     }
 }

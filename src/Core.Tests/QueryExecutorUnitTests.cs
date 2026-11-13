@@ -31,4 +31,11 @@ public class QueryExecutorUnitTests
         var result = await _queryExecutor.ExecuteAsync(new TestQuery(1));
         Assert.That(result.Value, Is.EqualTo("One"));
     }
+
+    [Test]
+    public async Task Test_QueryExecutor_QueryWithoutHandler_ReturnsFailure()
+    {
+        var result = await _queryExecutor.ExecuteAsync(new TestQueryWithoutHandler(1));
+        Assert.That(result.IsSuccess, Is.False);
+    }
 }

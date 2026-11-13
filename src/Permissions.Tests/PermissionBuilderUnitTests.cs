@@ -245,4 +245,26 @@ public class PermissionBuilderUnitTests
         await _permissionBuilder.Build();
         Assert.That(_permissionBuilder.Result, Is.EqualTo(PermissionBuilderOutcome.None));
     }
+
+    [TestCase(false, false, PermissionBuilderOutcome.None)]
+    [TestCase(false, true, PermissionBuilderOutcome.None)]
+    [TestCase(true, false, PermissionBuilderOutcome.Grant)]
+    [TestCase(true, true, PermissionBuilderOutcome.None)]
+    public async Task IsTrue_And_IsFalse_NegatesOnlyTheIndividualCondition(bool first, bool second, PermissionBuilderOutcome expected)
+    {
+        _permissionBuilder.IsTrue(() => first).And().IsFalse(() => second).Grant();
+        await _permissionBuilder.Build();
+        Assert.That(_permissionBuilder.Result, Is.EqualTo(expected));
+    }
+
+    [TestCase(false, false, PermissionBuilderOutcome.Grant)]
+    [TestCase(false, true, PermissionBuilderOutcome.None)]
+    [TestCase(true, false, PermissionBuilderOutcome.Grant)]
+    [TestCase(true, true, PermissionBuilderOutcome.Grant)]
+    public async Task IsTrue_Or_IsFalse_NegatesOnlyTheIndividualCondition(bool first, bool second, PermissionBuilderOutcome expected)
+    {
+        _permissionBuilder.IsTrue(() => first).Or().IsFalse(() => second).Grant();
+        await _permissionBuilder.Build();
+        Assert.That(_permissionBuilder.Result, Is.EqualTo(expected));
+    }
 }

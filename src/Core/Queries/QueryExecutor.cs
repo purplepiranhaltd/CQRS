@@ -69,9 +69,9 @@ public class QueryExecutor : IQueryExecutor
 
             return await handler.ExecuteAsync(query);
         }
-        catch (CommandHandlerNotImplementedException e)
+        catch (QueryHandlerNotImplementedException)
         {
-            return await Task.FromResult(Result.FailureResult<TResult>(new QueryHandlerNotImplementedFailure(nameof(TQuery))));
+            return await Task.FromResult(Result.FailureResult<TResult>(new QueryHandlerNotImplementedFailure(typeof(TQuery).Name)));
         }
     }
 }
