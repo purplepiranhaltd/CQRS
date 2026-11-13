@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <Nullable>enable</Nullable>
 	  <Authors>Paul @ Purple Piranha</Authors>
 	  <Company>Purple Piranha Limited</Company>
@@ -22,7 +22,7 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="11.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />
-		<PackageReference Include="PurplePiranha.FluentResults" Version="8.1.0-alpha" />
+		<PackageReference Include="PurplePiranha.FluentResults" Version="10.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
