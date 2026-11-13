@@ -18,6 +18,9 @@ env:
 jobs:
   build_and_release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for NuGet trusted publishing (OIDC)
+      contents: read
     defaults:
       run:
         working-directory: ./src
