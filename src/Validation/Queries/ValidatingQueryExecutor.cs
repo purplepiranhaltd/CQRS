@@ -44,7 +44,7 @@ public class ValidatingQueryExecutor : IQueryExecutor
 
     public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query)
     {
-        _logger.LogInformation($"Executing query (with validation): {query.GetType().Name}");
+        _logger.LogInformation("Executing query (with validation): {QueryName}", query.GetType().Name);
         return await CallPerformExecuteAsync<TResult>(query);
     }
 
@@ -77,7 +77,7 @@ public class ValidatingQueryExecutor : IQueryExecutor
 
     
 
-    private async Task<ValidationResult> CallPerformValidatationAsync<TQuery>(TQuery query)
+    private async Task<ValidationResult> CallPerformValidatationAsync<TQuery>(TQuery query) where TQuery : notnull
     {
         var queryType = query.GetType();
 

@@ -44,13 +44,13 @@ public class ValidatingCommandExecutor : ICommandExecutor
 
     public async Task<Result> ExecuteAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : ICommand
     {
-        _logger.LogInformation($"Executing command (with validation): {command.GetType().Name}");
+        _logger.LogInformation("Executing command (with validation): {CommandName}", command.GetType().Name);
         return await PerformExecutionAsync<TCommand>(command, cancellationToken);
     }
 
     public async Task<Result<TResult>> ExecuteAsync<TResult>(ICommand<TResult> command, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"Executing command (with validation): {command.GetType().Name}");
+        _logger.LogInformation("Executing command (with validation): {CommandName}", command.GetType().Name);
         return await CallPerformExecuteTAsync<TResult>(command, cancellationToken);
     }
 
@@ -81,7 +81,7 @@ public class ValidatingCommandExecutor : ICommandExecutor
         }
     }
 
-    private async Task<ValidationResult> CallPerformValidatationAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
+    private async Task<ValidationResult> CallPerformValidatationAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : notnull
     {
         var queryType = command.GetType();
 

@@ -34,7 +34,7 @@ public class QueryExecutor : IQueryExecutor
 
     public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query)
     {
-        _logger.LogInformation($"Executing query: {query.GetType().Name}");
+        _logger.LogInformation("Executing query: {QueryName}", query.GetType().Name);
 
         var queryType = query.GetType();
         var resultType = typeof(TResult);

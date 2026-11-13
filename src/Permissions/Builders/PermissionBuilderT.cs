@@ -15,13 +15,13 @@ public class PermissionBuilder<T, TProperty> :
         _propertyValue = propertyValue;
     }
 
-    public IPermissionBuilderWithPropertyInitial<T, TProperty> And()
+    public new IPermissionBuilderWithPropertyInitial<T, TProperty> And()
     {
         _mode = PermissionBuilderMode.And;
         return this;
     }
 
-    public IPermissionBuilderWithPropertyInitial<T, TProperty> Or()
+    public new IPermissionBuilderWithPropertyInitial<T, TProperty> Or()
     {
         _mode = PermissionBuilderMode.Or;
         return this;

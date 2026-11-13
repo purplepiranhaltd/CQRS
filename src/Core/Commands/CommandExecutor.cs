@@ -40,14 +40,14 @@ public class CommandExecutor : ICommandExecutor
     /// <returns></returns>
     public virtual async Task<Result> ExecuteAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : ICommand
     {
-        _logger.LogInformation($"Executing command: {command.GetType().Name}");
+        _logger.LogInformation("Executing command: {CommandName}", command.GetType().Name);
 
         try
         {
             var handler = _commandHandlerFactory.CreateHandler<TCommand>();
             return await handler.ExecuteAsync(command, cancellationToken);
         }
-        catch (CommandHandlerNotImplementedException e)
+        catch (CommandHandlerNotImplementedException)
         {
             return await Task.FromResult(Result.FailureResult(new CommandHandlerNotImplementedFailure(typeof(TCommand).Name)));
         }
@@ -61,7 +61,7 @@ public class CommandExecutor : ICommandExecutor
     /// <returns></returns>
     public async Task<Result<TResult>> ExecuteAsync<TResult>(ICommand<TResult> command, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"Executing command: {command.GetType().Name}");
+        _logger.LogInformation("Executing command: {CommandName}", command.GetType().Name);
 
         // We make a dynamic call to the generic method via reflection,
         // otherwise the return type would have to be specified on every call
@@ -105,7 +105,7 @@ public class CommandExecutor : ICommandExecutor
             var handler = _commandHandlerFactory.CreateHandler<TCommand, TResult>();
             return await handler.ExecuteAsync(command, cancellationToken);
         }
-        catch (CommandHandlerNotImplementedException e)
+        catch (CommandHandlerNotImplementedException)
         {
             return await Task.FromResult(Result.FailureResult<TResult>(new CommandHandlerNotImplementedFailure(typeof(TCommand).Name)));
         }

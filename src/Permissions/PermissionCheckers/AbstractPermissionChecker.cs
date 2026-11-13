@@ -6,7 +6,7 @@ namespace PurplePiranha.Cqrs.Permissions.PermissionCheckers;
 public abstract class AbstractPermissionChecker<T> : IPermissionChecker<T>
 {
     protected List<PermissionBuilder> Builders { get; private set; }
-    protected T Object { get; private set; }
+    protected T Object { get; private set; } = default!;
 
     public AbstractPermissionChecker()
     {

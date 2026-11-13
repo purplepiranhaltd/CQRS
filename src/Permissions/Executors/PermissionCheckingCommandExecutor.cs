@@ -60,7 +60,7 @@ public class PermissionCheckingCommandExecutor : ICommandExecutor
         }
     }
 
-    private async Task<bool> CallPerformPermissionCheckingAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
+    private async Task<bool> CallPerformPermissionCheckingAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : notnull
     {
         var commandType = command.GetType();
 

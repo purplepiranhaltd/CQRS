@@ -63,7 +63,7 @@ public class PermissionCheckingQueryExecutor : IQueryExecutor
         }
     }
 
-    private async Task<bool> CallPerformPermissionCheckingAsync<TQuery>(TQuery query)
+    private async Task<bool> CallPerformPermissionCheckingAsync<TQuery>(TQuery query) where TQuery : notnull
     {
         var queryType = query.GetType();
 
