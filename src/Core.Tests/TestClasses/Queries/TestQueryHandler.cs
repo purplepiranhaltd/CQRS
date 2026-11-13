@@ -9,6 +9,8 @@ public class TestQueryHandler : IQueryHandler<TestQuery, string>
 
     public async Task<Result<string>> ExecuteAsync(TestQuery query, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         return await Task.FromResult(Result.SuccessResult(Data[query.Id]));
     }
 }

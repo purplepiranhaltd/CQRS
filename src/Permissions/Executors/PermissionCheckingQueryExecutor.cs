@@ -28,46 +28,46 @@ public class PermissionCheckingQueryExecutor : IQueryExecutor
     }
     #endregion
     #region Methods
-    public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query)
+    public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default)
     {
-        return await CallPerformExecuteAsync<TResult>(query);
+        return await CallPerformExecuteAsync<TResult>(query, cancellationToken);
     }
     #endregion
     #region Helpers
 
-    private async Task<Result<TResult>> CallPerformExecuteAsync<TResult>(IQuery<TResult> query)
+    private async Task<Result<TResult>> CallPerformExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default)
     {
         var queryType = query.GetType();
         var resultType = typeof(TResult);
 
         return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
-                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformExecutionAsync), new[] { queryType, resultType }, query);
+                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformExecutionAsync), new[] { queryType, resultType }, query, cancellationToken);
     }
 
-    private async Task<bool> CallPerformPermissionCheckingAsync<TQuery>(TQuery query) where TQuery : notnull
+    private async Task<bool> CallPerformPermissionCheckingAsync<TQuery>(TQuery query, CancellationToken cancellationToken = default) where TQuery : notnull
     {
         var queryType = query.GetType();
 
         return await GenericMethodInvoker.InvokeAsync<bool>(
-                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformPermissionCheckingAsync), new[] { queryType }, query);
+                typeof(PermissionCheckingQueryExecutor), this, nameof(PerformPermissionCheckingAsync), new[] { queryType }, query, cancellationToken);
     }
 
-    private async Task<Result<TResult>> PerformExecutionAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
+    private async Task<Result<TResult>> PerformExecutionAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery<TResult>
     {
         if (query is IPermissionRequired)
         {
-            var hasPermission = await CallPerformPermissionCheckingAsync(query);
+            var hasPermission = await CallPerformPermissionCheckingAsync(query, cancellationToken);
 
             if (!hasPermission)
                 return Result.FailureResult(_notAuthorisedFailureFactory.GetNotAuthorisedFailure());
         }
 
-        return await _queryExecutor.ExecuteAsync(query);
+        return await _queryExecutor.ExecuteAsync(query, cancellationToken);
     }
 
-    private async Task<bool> PerformPermissionCheckingAsync<TQuery>(TQuery query) where TQuery : IPermissionRequired
+    private async Task<bool> PerformPermissionCheckingAsync<TQuery>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IPermissionRequired
     {
-        return await _permissionCheckerExecutor.ExecuteAsync(query);
+        return await _permissionCheckerExecutor.ExecuteAsync(query, cancellationToken);
     }
     #endregion
 

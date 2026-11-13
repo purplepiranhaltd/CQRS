@@ -89,4 +89,14 @@ public class AbstractPermissionCheckerUnitTests
         });
         Assert.Fail();
     }
+
+    [Test]
+    public async Task PermissionCheckingQueryExecutor_CancelledToken_IsPassedThroughToTheHandler()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await _queryExecutor.ExecuteAsync(new TestAbstractPermissionCheckingQuery(234), cts.Token));
+    }
 }

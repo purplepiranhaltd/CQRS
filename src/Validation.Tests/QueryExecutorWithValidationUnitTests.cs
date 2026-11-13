@@ -59,4 +59,14 @@ public class QueryExecutorWithValidationUnitTests
             await _queryExecutor.ExecuteAsync(new TestValidatingQueryWithoutValidationHandler(1));
         });
     }
+
+    [Test]
+    public async Task QueryExecutor_CancelledToken_IsPassedThroughToTheHandler()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await _queryExecutor.ExecuteAsync(new TestValidatingQuery(1), cts.Token));
+    }
 }

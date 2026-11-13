@@ -3,6 +3,7 @@ using PurplePiranha.Cqrs.Core.Commands;
 using PurplePiranha.Cqrs.Core.Failures;
 using PurplePiranha.FluentResults.Results;
 using PurplePiranha.Cqrs.Core.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PurplePiranha.Cqrs.Core.Queries;
@@ -23,7 +24,7 @@ public class QueryExecutor : IQueryExecutor
         _logger = logger;
     }
 
-    public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query)
+    public async Task<Result<TResult>> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Executing query: {QueryName}", query.GetType().Name);
 
@@ -31,16 +32,16 @@ public class QueryExecutor : IQueryExecutor
         var resultType = typeof(TResult);
 
         return await GenericMethodInvoker.InvokeAsync<Result<TResult>>(
-                typeof(QueryExecutor), this, nameof(ExecuteQueryAsync), new[] { queryType, resultType }, query);
+                typeof(QueryExecutor), this, nameof(ExecuteQueryAsync), new[] { queryType, resultType }, query, cancellationToken);
     }
 
-    protected virtual async Task<Result<TResult>> ExecuteQueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
+    protected virtual async Task<Result<TResult>> ExecuteQueryAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery<TResult>
     {
         try
         {
             var handler = _queryHandlerFactory.CreateHandler<TQuery, TResult>();
 
-            return await handler.ExecuteAsync(query);
+            return await handler.ExecuteAsync(query, cancellationToken);
         }
         catch (QueryHandlerNotImplementedException)
         {

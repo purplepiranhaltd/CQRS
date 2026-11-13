@@ -70,4 +70,14 @@ public class QueryTests
 
         Assert.Fail();
     }
+
+    [Test]
+    public async Task Query_CancelledToken_IsPassedThroughToTheHandler()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await _queryExecutor.ExecuteAsync(new PThenVTestQuery(5), cts.Token));
+    }
 }

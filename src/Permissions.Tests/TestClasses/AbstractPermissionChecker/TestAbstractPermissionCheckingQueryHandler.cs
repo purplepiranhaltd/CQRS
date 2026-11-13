@@ -7,6 +7,8 @@ public class TestAbstractPermissionCheckingQueryHandler : IQueryHandler<TestAbst
 {
     public async Task<Result<int>> ExecuteAsync(TestAbstractPermissionCheckingQuery query, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (query.IMustNotBe100 == 100)
             Assert.Fail("Query handler called before permission checking.");
 

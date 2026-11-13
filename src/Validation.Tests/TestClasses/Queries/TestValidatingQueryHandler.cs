@@ -7,6 +7,8 @@ public class TestValidatingQueryHandler : IQueryHandler<TestValidatingQuery, int
 {
     public async Task<Result<int>> ExecuteAsync(TestValidatingQuery query, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         return await Task.FromResult(Result.SuccessResult(query.A * query.A));
     }
 }

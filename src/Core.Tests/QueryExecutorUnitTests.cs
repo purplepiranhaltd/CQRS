@@ -38,4 +38,14 @@ public class QueryExecutorUnitTests
         var result = await _queryExecutor.ExecuteAsync(new TestQueryWithoutHandler(1));
         Assert.That(result.IsSuccess, Is.False);
     }
+
+    [Test]
+    public async Task Test_QueryExecutor_CancelledToken_IsPassedThroughToTheHandler()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await _queryExecutor.ExecuteAsync(new TestQuery(1), cts.Token));
+    }
 }
