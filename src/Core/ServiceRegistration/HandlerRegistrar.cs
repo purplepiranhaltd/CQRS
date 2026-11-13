@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -41,7 +42,7 @@ public class HandlerRegistrar
     private IEnumerable<Type> GetCommandHandlerTypes()
     {
         var types = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(x => x.GetTypes())
+            .SelectMany(GetLoadableTypes)
             .Where(x =>
             {
                 if (x.IsInterface || x.IsAbstract || x.IsGenericTypeDefinition) return false;
@@ -60,6 +61,30 @@ public class HandlerRegistrar
     }
 
     /// <summary>
+    /// Gets the types from an assembly, tolerating assemblies that can't be fully loaded
+    /// (e.g. missing optional dependencies) or that are dynamic.
+    /// </summary>
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    {
+        if (assembly.IsDynamic)
+            return Enumerable.Empty<Type>();
+
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            // Some types failed to load; use the ones that did.
+            return ex.Types.Where(t => t is not null)!;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or FileNotFoundException or FileLoadException or BadImageFormatException)
+        {
+            return Enumerable.Empty<Type>();
+        }
+    }
+
+    /// <summary>
     /// Gets the type of the command handler service interface for a specified implementation type.
     /// </summary>
     /// <param name="commandHandlerType">Command handler implementation type</param>
@@ -74,7 +99,9 @@ public class HandlerRegistrar
         if (criteriaObj is null)
             return false;
 
+        // Match on the generic type definition (not just the name) so that unrelated
+        // interfaces which happen to share a name are not registered.
         var types = (Type[])criteriaObj;
-        return types.Select(t => t.Name).Contains(typeObj.Name);
+        return types.Contains(typeObj.IsGenericType ? typeObj.GetGenericTypeDefinition() : typeObj);
     });
 }

@@ -27,15 +27,18 @@ public class PermissionBuilder<T, TProperty> :
         return this;
     }
 
+    // Null-safe equality: the property value (or the comparison value) may be null.
+    private bool AreEqual(TProperty value) => EqualityComparer<TProperty>.Default.Equals(_propertyValue, value);
+
     public IPermissionBuilderWithPropertyWithCondition<T, TProperty> IsEqualTo(TProperty value)
     {
-        _permissionCalculation.Add((this._mode, Task.FromResult(_propertyValue.Equals(value)), false));
+        _permissionCalculation.Add((this._mode, Task.FromResult(AreEqual(value)), false));
         return this;
     }
 
     public IPermissionBuilderWithPropertyWithCondition<T, TProperty> IsNotEqualTo(TProperty value)
     {
-        _permissionCalculation.Add((this._mode, Task.FromResult(_propertyValue.Equals(value)), true));
+        _permissionCalculation.Add((this._mode, Task.FromResult(AreEqual(value)), true));
         return this;
     }
 

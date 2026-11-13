@@ -218,4 +218,40 @@ public class PermissionBuilderTUnitTests
         await builder.Build();
         Assert.That(builder.Result, Is.EqualTo(PermissionBuilderOutcome.Grant));
     }
+
+    [Test]
+    public async Task NullProperty_IsEqualTo_Null_Grant_OutcomeEqualsGrant()
+    {
+        var builder = new PermissionBuilder<object, string?>(null);
+        builder.IsEqualTo(null).Grant();
+        await builder.Build();
+        Assert.That(builder.Result, Is.EqualTo(PermissionBuilderOutcome.Grant));
+    }
+
+    [Test]
+    public async Task NullProperty_IsEqualTo_Value_Grant_OutcomeEqualsNone()
+    {
+        var builder = new PermissionBuilder<object, string?>(null);
+        builder.IsEqualTo("a").Grant();
+        await builder.Build();
+        Assert.That(builder.Result, Is.EqualTo(PermissionBuilderOutcome.None));
+    }
+
+    [Test]
+    public async Task NullProperty_IsNotEqualTo_Value_Grant_OutcomeEqualsGrant()
+    {
+        var builder = new PermissionBuilder<object, string?>(null);
+        builder.IsNotEqualTo("a").Grant();
+        await builder.Build();
+        Assert.That(builder.Result, Is.EqualTo(PermissionBuilderOutcome.Grant));
+    }
+
+    [Test]
+    public async Task Property_IsEqualTo_Null_Grant_OutcomeEqualsNone()
+    {
+        var builder = new PermissionBuilder<object, string?>("a");
+        builder.IsEqualTo(null).Grant();
+        await builder.Build();
+        Assert.That(builder.Result, Is.EqualTo(PermissionBuilderOutcome.None));
+    }
 }

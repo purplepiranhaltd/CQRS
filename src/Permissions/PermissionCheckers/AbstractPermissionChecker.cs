@@ -21,7 +21,7 @@ public abstract class AbstractPermissionChecker<T> : IPermissionChecker<T>
         var func = expression.Compile();
         var value = func(Object);
 
-        var builder = new PermissionBuilder<T, TProperty>((TProperty)value);
+        var builder = new PermissionBuilder<T, TProperty>(value);
         Builders.Add(builder);
         return builder;
     }
